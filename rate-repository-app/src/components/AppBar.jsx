@@ -1,9 +1,13 @@
 import React from 'react';
 import { View, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { Link } from 'react-router-native';
+import { useQuery } from '@apollo/client';
+import { useApolloClient } from '@apollo/client';
 import Text from './Text';
 import theme from '../theme';
 import Constants from 'expo-constants';
+import { GET_AUTHORIZED_USER } from '../graphql/queries';
+import useAuthStorage from '../hooks/useAuthStorage';
 
 const styles = StyleSheet.create({
   container: {
@@ -12,7 +16,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   scrollView: {
-    flexDirection: 'row', // Align tabs in a row
+    flexDirection: 'row',
   },
   tab: {
     padding: 10,
@@ -20,6 +24,15 @@ const styles = StyleSheet.create({
 });
 
 const AppBar = () => {
+  const { data } = useQuery(GET_AUTHORIZED_USER);
+  const apolloClient = useApolloClient();
+  const authStorage = useAuthStorage();
+
+  const signOut = async () => {
+    await authStorage.removeAccessToken();
+    apolloClient.resetStore();
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollView}>
@@ -28,28 +41,17 @@ const AppBar = () => {
             <Text fontWeight="bold" color="textPrimary">Repositories</Text>
           </Link>
         </Pressable>
-        <Pressable style={styles.tab}>
-          <Link to="/signin" underlayColor="#f0f4f7">
-            <Text fontWeight="bold" color="textPrimary">Sign in</Text>
-          </Link>
-        </Pressable>
-        {/* Add more tabs for testing scrolling */}
-        <Pressable style={styles.tab}>
-          <Link to="/tab3" underlayColor="#f0f4f7">
-            <Text fontWeight="bold" color="textPrimary">Tab 3</Text>
-          </Link>
-        </Pressable>
-        <Pressable style={styles.tab}>
-          <Link to="/tab4" underlayColor="#f0f4f7">
-            <Text fontWeight="bold" color="textPrimary">Tab 4</Text>
-          </Link>
-        </Pressable>
-        <Pressable style={styles.tab}>
-          <Link to="/tab5" underlayColor="#f0f4f7">
-            <Text fontWeight="bold" color="textPrimary">Tab 5</Text>
-          </Link>
-        </Pressable>
-        {/* Add more tabs as needed */}
+        {data?.me ? (
+          <Pressable style={styles.tab} onPress={signOut}>
+            <Text fontWeight="bold" color="textPrimary">Sign out</Text>
+          </Pressable>
+        ) : (
+          <Pressable style={styles.tab}>
+            <Link to="/signin" underlayColor="#f0f4f7">
+              <Text fontWeight="bold" color="textPrimary">Sign in</Text>
+            </Link>
+          </Pressable>
+        )}
       </ScrollView>
     </View>
   );
