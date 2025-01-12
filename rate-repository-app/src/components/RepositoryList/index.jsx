@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { FlatList, View, StyleSheet, Pressable, Text } from 'react-native';
+import { FlatList, View, StyleSheet, Pressable, Text, TextInput, ActivityIndicator } from 'react-native';
 import RepositoryItem from './RepositoryItem';
 import useRepositories from '../../hooks/useRepositories';
 import { useNavigate } from 'react-router-native';
 import { Picker } from '@react-native-picker/picker';
+import { useDebounce } from 'use-debounce';
 
 const styles = StyleSheet.create({
   separator: {
@@ -12,62 +13,45 @@ const styles = StyleSheet.create({
   picker: {
     marginBottom: 10,
   },
+  searchInput: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+  },
+  loading: {
+    marginVertical: 20,
+    alignItems: 'center',
+  },
 });
 
 const ItemSeparator = () => <View style={styles.separator} />;
 
-export const RepositoryListContainer = ({ repositories, onSortChange, selectedValue }) => {
-  const navigate = useNavigate();
-  const repositoryNodes = repositories ? repositories.edges.map(edge => edge.node) : [];
-
-  return (
-    <View>
-      <Picker
-        selectedValue={selectedValue}
-        style={styles.picker}
-        onValueChange={(itemValue) => onSortChange(itemValue)}
-      >
-        <Picker.Item label="Latest repositories" value="CREATED_AT_DESC" />
-        <Picker.Item label="Highest rated repositories" value="RATING_AVERAGE_DESC" />
-        <Picker.Item label="Lowest rated repositories" value="RATING_AVERAGE_ASC" />
-      </Picker>
-      <FlatList
-        data={repositoryNodes}
-        ItemSeparatorComponent={ItemSeparator}
-        renderItem={({ item }) => (
-          <Pressable onPress={() => {
-            console.log(`Navigating to repository with ID: ${item.id}`);
-            navigate(`/repository/${item.id}`);
-          }}>
-            <RepositoryItem repository={item} testID="repositoryItem" />
-          </Pressable>
-        )}
-        keyExtractor={(item) => item.id}
-      />
-    </View>
-  );
-};
-
 const RepositoryList = () => {
-  const [sortOrder, setSortOrder] = useState('CREATED_AT'); // Default sorting
-  const [orderDirection, setOrderDirection] = useState('DESC'); // Default direction
-  const [pickerValue, setPickerValue] = useState('CREATED_AT_DESC'); // State for Picker value
-  const { repositories, loading, error } = useRepositories(sortOrder, orderDirection);
+  const [sortOrder, setSortOrder] = useState('CREATED_AT');
+  const [orderDirection, setOrderDirection] = useState('DESC');
+  const [pickerValue, setPickerValue] = useState('CREATED_AT_DESC');
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [debouncedSearchKeyword] = useDebounce(searchKeyword, 700);
+  const navigate = useNavigate();
+
+  const { repositories, loading, error } = useRepositories(sortOrder, orderDirection, 10, '', debouncedSearchKeyword);
 
   const onSortChange = (value) => {
-    setPickerValue(value); // Update Picker value
+    setPickerValue(value);
     switch (value) {
       case 'CREATED_AT_DESC':
         setSortOrder('CREATED_AT');
-        setOrderDirection('DESC'); // Latest first
+        setOrderDirection('DESC');
         break;
       case 'RATING_AVERAGE_DESC':
         setSortOrder('RATING_AVERAGE');
-        setOrderDirection('DESC'); // Highest first
+        setOrderDirection('DESC');
         break;
       case 'RATING_AVERAGE_ASC':
         setSortOrder('RATING_AVERAGE');
-        setOrderDirection('ASC'); // Lowest first
+        setOrderDirection('ASC');
         break;
       default:
         break;
@@ -77,7 +61,42 @@ const RepositoryList = () => {
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error: {error.message}</Text>;
 
-  return <RepositoryListContainer repositories={repositories} onSortChange={onSortChange} selectedValue={pickerValue} />;
+  return (
+    <FlatList
+      data={repositories ? repositories.edges.map(edge => edge.node) : []}
+      ItemSeparatorComponent={ItemSeparator}
+      ListHeaderComponent={() => (
+        <View>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search repositories..."
+            value={searchKeyword}
+            onChangeText={setSearchKeyword}
+          />
+          <Picker
+            selectedValue={pickerValue}
+            style={styles.picker}
+            onValueChange={onSortChange}
+          >
+            <Picker.Item label="Latest repositories" value="CREATED_AT_DESC" />
+            <Picker.Item label="Highest rated repositories" value="RATING_AVERAGE_DESC" />
+            <Picker.Item label="Lowest rated repositories" value="RATING_AVERAGE_ASC" />
+          </Picker>
+          {loading && (
+            <View style={styles.loading}>
+              <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+          )}
+        </View>
+      )}
+      renderItem={({ item }) => (
+        <Pressable onPress={() => navigate(`/repository/${item.id}`)}>
+          <RepositoryItem repository={item} testID="repositoryItem" />
+        </Pressable>
+      )}
+      keyExtractor={(item) => item.id}
+    />
+  );
 };
 
 export default RepositoryList;
