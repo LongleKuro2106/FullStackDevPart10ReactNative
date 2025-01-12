@@ -66,6 +66,13 @@ const AppBar = () => {
             </Link>
           </Pressable>
         )}
+        {data?.me && (
+          <Pressable style={styles.tab}>
+            <Link to="/my-reviews" underlayColor="#f0f4f7">
+              <Text fontWeight="bold" color="textPrimary">My Reviews</Text>
+            </Link>
+          </Pressable>
+        )}
       </ScrollView>
     </View>
   );

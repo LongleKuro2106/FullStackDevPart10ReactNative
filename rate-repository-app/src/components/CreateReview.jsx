@@ -22,13 +22,13 @@ const CreateReview = () => {
 
     try {
       const { data } = await createReview({
-        variables: { 
-          review: { 
-            ownerName, 
-            repositoryName, 
-            rating: Number(rating), 
-            text 
-          } 
+        variables: {
+          review: {
+            ownerName,
+            repositoryName,
+            rating: Number(rating),
+            text
+          }
         },
       });
       navigate(`/repository/${data.createReview.repository.id}`); // Redirect to the repository view
@@ -116,4 +116,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CreateReview; 
+export default CreateReview;
