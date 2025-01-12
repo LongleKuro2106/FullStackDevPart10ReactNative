@@ -41,6 +41,20 @@ const AppBar = () => {
             <Text fontWeight="bold" color="textPrimary">Repositories</Text>
           </Link>
         </Pressable>
+        {data?.me && (
+          <Pressable style={styles.tab}>
+            <Link to="/create-review" underlayColor="#f0f4f7">
+              <Text fontWeight="bold" color="textPrimary">Create a review</Text>
+            </Link>
+          </Pressable>
+        )}
+        {!data?.me && (
+          <Pressable style={styles.tab}>
+            <Link to="/signup" underlayColor="#f0f4f7">
+              <Text fontWeight="bold" color="textPrimary">Sign up</Text>
+            </Link>
+          </Pressable>
+        )}
         {data?.me ? (
           <Pressable style={styles.tab} onPress={signOut}>
             <Text fontWeight="bold" color="textPrimary">Sign out</Text>

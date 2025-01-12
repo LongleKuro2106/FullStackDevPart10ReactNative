@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, TextInput, Button, Text } from 'react-native';
 import { Formik } from 'formik';
 import * as yup from 'yup';
-import { useNavigate } from 'react-router-native'; // Import useNavigate
+import { useNavigate } from 'react-router-native';
 import useSignIn from '../hooks/useSignIn';
 
 const validationSchema = yup.object().shape({
@@ -10,9 +10,47 @@ const validationSchema = yup.object().shape({
   password: yup.string().required('Password is required'),
 });
 
+export const SignInContainer = ({ onSubmit }) => (
+  <View style={styles.container}>
+    <Text style={styles.title}>Sign In</Text>
+    <Formik
+      initialValues={{ username: '', password: '' }}
+      validationSchema={validationSchema}
+      onSubmit={onSubmit}
+    >
+      {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+        <>
+          <TextInput
+            style={[styles.input, touched.username && errors.username ? styles.errorInput : null]}
+            placeholder="Username"
+            onChangeText={handleChange('username')}
+            onBlur={handleBlur('username')}
+            value={values.username}
+          />
+          {touched.username && errors.username && (
+            <Text style={styles.errorText}>{errors.username}</Text>
+          )}
+          <TextInput
+            style={[styles.input, touched.password && errors.password ? styles.errorInput : null]}
+            placeholder="Password"
+            secureTextEntry
+            onChangeText={handleChange('password')}
+            onBlur={handleBlur('password')}
+            value={values.password}
+          />
+          {touched.password && errors.password && (
+            <Text style={styles.errorText}>{errors.password}</Text>
+          )}
+          <Button onPress={handleSubmit} title="Submit" />
+        </>
+      )}
+    </Formik>
+  </View>
+);
+
 const SignIn = () => {
   const [signIn] = useSignIn();
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const onSubmit = async (values) => {
     const { username, password } = values;
@@ -20,50 +58,14 @@ const SignIn = () => {
     try {
       const { data } = await signIn({ username, password });
       if (data) {
-        navigate('/'); // Redirect to the repositories list
+        navigate('/');
       }
     } catch (e) {
       console.log(e);
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sign In</Text>
-      <Formik
-        initialValues={{ username: '', password: '' }}
-        validationSchema={validationSchema}
-        onSubmit={onSubmit}
-      >
-        {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
-          <>
-            <TextInput
-              style={[styles.input, touched.username && errors.username ? styles.errorInput : null]}
-              placeholder="Username"
-              onChangeText={handleChange('username')}
-              onBlur={handleBlur('username')}
-              value={values.username}
-            />
-            {touched.username && errors.username && (
-              <Text style={styles.errorText}>{errors.username}</Text>
-            )}
-            <TextInput
-              style={[styles.input, touched.password && errors.password ? styles.errorInput : null]}
-              placeholder="Password"
-              secureTextEntry
-              onChangeText={handleChange('password')}
-              onBlur={handleBlur('password')}
-              value={values.password}
-            />
-            {touched.password && errors.password && (
-              <Text style={styles.errorText}>{errors.password}</Text>
-            )}
-            <Button onPress={handleSubmit} title="Submit" />
-          </>
-        )}
-      </Formik>
-    </View>
-  );
+  return <SignInContainer onSubmit={onSubmit} />;
 };
 
 const styles = StyleSheet.create({

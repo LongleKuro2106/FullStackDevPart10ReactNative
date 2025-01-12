@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Image } from 'react-native';
-import Text from './Text';
+import Text from '../Text';
 
 const styles = StyleSheet.create({
   container: {
@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
     flexDirection: 'column',
-    justifyContent: 'flex-start'
+    justifyContent: 'flex-start',
   },
   avatar: {
     width: 50,
@@ -39,7 +39,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-
   stat: {
     marginRight: 10,
   },
@@ -53,10 +52,9 @@ const formatCount = (count) => {
   return count;
 };
 
-const RepositoryItem = ({ repository }) => {
+const RepositoryItem = ({ repository, testID }) => {
   return (
-    <View style={styles.container}>
-
+    <View style={styles.container} testID={testID}>
       <View style={styles.infoContainer}>
         <Image style={styles.avatar} source={{ uri: repository.ownerAvatarUrl }} />
         <View style={styles.nameContainer}>
@@ -66,16 +64,14 @@ const RepositoryItem = ({ repository }) => {
             <Text color="textButton">{repository.language}</Text>
           </View>
         </View>
-        </View>
+      </View>
 
-
-        <View style={styles.statsContainer}>
-          <Text color="textSecondary" style={styles.stat}>{formatCount(repository.stargazersCount)} Stars</Text>
-          <Text color="textSecondary" style={styles.stat}>{formatCount(repository.forksCount)} Forks</Text>
-          <Text color="textSecondary" style={styles.stat}>{repository.reviewCount} Reviews</Text>
-          <Text color="textSecondary" style={styles.stat}>{repository.ratingAverage} Rating</Text>
-        </View>
-
+      <View style={styles.statsContainer}>
+        <Text color="textSecondary" style={styles.stat}>{formatCount(repository.stargazersCount)} Stars</Text>
+        <Text color="textSecondary" style={styles.stat}>{formatCount(repository.forksCount)} Forks</Text>
+        <Text color="textSecondary" style={styles.stat}>{repository.reviewCount} Reviews</Text>
+        <Text color="textSecondary" style={styles.stat}>{repository.ratingAverage} Rating</Text>
+      </View>
     </View>
   );
 };
