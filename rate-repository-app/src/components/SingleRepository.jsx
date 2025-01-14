@@ -4,7 +4,7 @@ import { useQuery } from '@apollo/client';
 import { useParams } from 'react-router-native';
 import { GET_REPOSITORY } from '../graphql/queries';
 import RepositoryItem from './RepositoryList/RepositoryItem';
-import * as Linking from 'expo-linking';
+import { Linking } from 'react-native';
 import { format } from 'date-fns';
 
 const RepositoryInfo = ({ repository }) => {

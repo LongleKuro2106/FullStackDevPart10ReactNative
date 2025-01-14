@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, StyleSheet, Image } from 'react-native';
+import { View, StyleSheet, Image, FlatList } from 'react-native';
 import Text from '../Text';
+import useReviews from '../../hooks/useReviews';
 
 const styles = StyleSheet.create({
   container: {
@@ -52,9 +53,22 @@ const formatCount = (count) => {
   return count;
 };
 
-const RepositoryItem = ({ repository, testID }) => {
+const RepositoryItem = ({ repository }) => {
+  const { reviews, loading, fetchMore } = useReviews(repository.id, 5, null); // Fetch 5 reviews initially
+
+  const onEndReach = () => {
+    fetchMore();
+  };
+
+  if (loading) return <Text>Loading reviews...</Text>;
+
+  // Check if reviews are available
+  if (!reviews) {
+    return <Text>No reviews available.</Text>;
+  }
+
   return (
-    <View style={styles.container} testID={testID}>
+    <View style={styles.container}>
       <View style={styles.infoContainer}>
         <Image style={styles.avatar} source={{ uri: repository.ownerAvatarUrl }} />
         <View style={styles.nameContainer}>
@@ -72,6 +86,19 @@ const RepositoryItem = ({ repository, testID }) => {
         <Text color="textSecondary" style={styles.stat}>{repository.reviewCount} Reviews</Text>
         <Text color="textSecondary" style={styles.stat}>{repository.ratingAverage} Rating</Text>
       </View>
+
+      <FlatList
+        data={reviews.edges.map(edge => edge.node)}
+        renderItem={({ item }) => (
+          <View>
+            <Text>{item.text}</Text>
+            <Text>Rating: {item.rating}</Text>
+          </View>
+        )}
+        keyExtractor={(item) => item.id}
+        onEndReached={onEndReach}
+        onEndReachedThreshold={0.5}
+      />
     </View>
   );
 };

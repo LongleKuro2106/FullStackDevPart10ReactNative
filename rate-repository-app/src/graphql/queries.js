@@ -47,7 +47,7 @@ export const GET_REPOSITORY = gql`
       reviewCount
       url
       ownerAvatarUrl
-      reviews {
+      reviews(first: 5) {
         edges {
           node {
             id
@@ -59,6 +59,11 @@ export const GET_REPOSITORY = gql`
               username
             }
           }
+          cursor
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
         }
       }
     }
